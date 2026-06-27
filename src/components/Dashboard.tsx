@@ -1,29 +1,60 @@
-
 import { TOTAL } from "../data/milestones";
-import { totalPaid } from "../utils/milestoneAllocator";
+import { totalPaid, formatDT } from "../utils/milestoneAllocator";
+import type { Payment } from "../types";
 
-export default function Dashboard({ payments }: any) {
-  const amounts = payments.map((p: any) => p.amount);
+type Props = { payments: Payment[] };
 
+export default function Dashboard({ payments }: Props) {
+  const amounts = payments.map((p) => p.amount);
   const total = totalPaid(amounts);
-  const progress = (total / TOTAL) * 100;
+  const remaining = TOTAL - total;
+  const progress = Math.min((total / TOTAL) * 100, 100);
+
+  const getBarColor = (pct: number) => {
+    if (pct >= 100) return "from-emerald-500 to-emerald-400";
+    if (pct >= 60)  return "from-indigo-500 to-violet-500";
+    if (pct >= 30)  return "from-indigo-600 to-indigo-400";
+    return "from-slate-500 to-indigo-500";
+  };
 
   return (
-    <div className="bg-white p-4 rounded-xl shadow mb-4">
-      <h2 className="text-xl font-bold">Dashboard</h2>
+    <div className="rounded-2xl border border-white/8 bg-white/4 backdrop-blur-sm p-6 mb-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-widest mb-1">Projet ERP Orthomar</p>
+          <h2 className="text-2xl font-semibold text-white">Suivi des paiements</h2>
+        </div>
+        <div className="text-right">
+          <p className="font-mono text-3xl font-bold text-white">{progress.toFixed(1)}<span className="text-slate-400 text-xl">%</span></p>
+          <p className="text-xs text-slate-500 mt-0.5">avancement global</p>
+        </div>
+      </div>
 
-      <p>Total Projet: {TOTAL} DT</p>
-      <p>Total Reçu: {total} DT</p>
-      <p>Reste: {TOTAL - total} DT</p>
-
-      <div className="w-full bg-gray-200 h-4 rounded mt-2">
+      {/* Progress bar */}
+      <div className="relative h-3 bg-white/6 rounded-full overflow-hidden mb-6">
         <div
-          className="bg-green-500 h-4 rounded"
-          style={{ width: `${progress}%` }}
+          className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${getBarColor(progress)} bar-animated transition-all`}
+          style={{ "--bar-width": `${progress}%` } as React.CSSProperties}
         />
       </div>
 
-      <p className="mt-2">{progress.toFixed(2)}%</p>
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <Stat label="Montant total" value={formatDT(TOTAL)} sub="budget projet" color="text-slate-300" />
+        <Stat label="Reçu" value={formatDT(total)} sub={`${payments.length} versement${payments.length > 1 ? 's' : ''}`} color="text-emerald-400" />
+        <Stat label="Restant" value={formatDT(remaining)} sub="à recevoir" color="text-indigo-400" />
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
+  return (
+    <div className="bg-white/4 rounded-xl p-4 border border-white/6">
+      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{label}</p>
+      <p className={`font-mono text-lg font-semibold ${color} leading-tight`}>{value}</p>
+      <p className="text-xs text-slate-600 mt-0.5">{sub}</p>
     </div>
   );
 }
