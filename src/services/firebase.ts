@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-// 🔥 Remplace ces valeurs par ta config Firebase réelle
 const firebaseConfig = {
   apiKey: "AIzaSyByH8fC6l2_UlDtUK6iQfzP97oX5TVBXdU",
   authDomain: "orthomar-payment-tracker.firebaseapp.com",
@@ -13,3 +13,5 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
